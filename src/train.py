@@ -124,9 +124,10 @@ def train_population(agents, train_set, config, sensorimotor_system, seed_path):
             mean_outcomes = np.mean(logs["graph_outcomes"][-100:])
             print(f"> Iteration {i} / {nb_iter} |\t\t{mean_outcomes * 100}% success rate")
 
-        if i == 0 or (config["use_img_perspectives"] and (i + 1) % 1000) or (
-                not config["use_img_perspectives"] and (i + 1) % 100) == 0:
+        if i == 0 or (config["use_img_perspectives"] and (i + 1) % 100 == 0) or (
+                not config["use_img_perspectives"] and (i + 1) % 100 == 0):
             print(f"\n# Saving Population-{i}...")
+            print((config["use_img_perspectives"] and (i + 1) % 1000))
             torch.save(logs, seed_path + "logs.pt")
             save_history(seed_path, agents, (i if i == 0 else i + 1))
             print("# Done!\n")

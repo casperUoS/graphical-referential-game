@@ -10,6 +10,7 @@ sns.set_theme()
 sns.set_style("whitegrid", {'axes.grid' : False})
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+print("##### DEVICE:",device)
 
 path  = '/gpfsscratch/rech/imi/uwv18kd/ebng'
 if not (os.path.exists(path)):

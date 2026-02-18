@@ -74,6 +74,7 @@ class DMP_SensorimotorSystem(SensorimotorSystem):
     ##### DRAWING
     # Convert trajectories into coordinates in [-1,1] range
     pts     = (torch.stack((trajectories_x2,trajectories_y2),2).reshape(B,-1,2))*2-1
+    pts     = pts.to(device)
     npoints = pts.shape[1]
 
     # Compute all valid permuations of line start and end points

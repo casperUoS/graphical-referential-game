@@ -1,3 +1,5 @@
+import sys
+
 from data import *
 from train import *
 from eval import *
@@ -35,19 +37,36 @@ config = {
     "use_baseline": True,
     "no_ss": False
 }
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--exp_name", type=str, default="test")
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--max_iterations", type=int, default=100000)
+
+    params = sys.argv[1:]
+    opts = parser.parse_args(params)
+
+    return opts
+
 ################################################################################
 
 if __name__ == "__main__":
 
-    if "SLURM_ARRAY_TASK_ID" in os.environ.keys():
-        seed = int(os.environ["SLURM_ARRAY_TASK_ID"])
-    else:
-        seed = 0
+    # if "SLURM_ARRAY_TASK_ID" in os.environ.keys():
+    #     seed = int(os.environ["SLURM_ARRAY_TASK_ID"])
+    # else:
+    #     seed = 0
+    #
+    # if "SLURM_JOB_NAME" in os.environ.keys():
+    #     exp_name = os.environ["SLURM_JOB_NAME"]
+    # else:
+    #     exp_name = "one-hot-no-ss"
 
-    if "SLURM_JOB_NAME" in os.environ.keys():
-        exp_name = os.environ["SLURM_JOB_NAME"]
-    else:
-        exp_name = "one-hot-no-ss"
+    opts = parse_arguments()
+
+    exp_name = opts.exp_name
+    seed = opts.seed
 
     if exp_name == "test":
         # !!!! CHANGE BACK TO 100/10000
