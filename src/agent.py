@@ -78,9 +78,9 @@ class AgentEBM():
 
       ##### ACTIONS GENERATION
       if verbose:
-        print(f"--- Generating DIRECT utterances for {targets.shape[0]} targets given a context of {referents.shape[0]} referents")
-        print(f"-- {nb_search} simultaneous search per target")
-        print(f"-- Targets : {targets}")
+        print(f"--- Generating DIRECT utterances for {targets.shape[0]} targets given a context of {referents.shape[0]} referents", flush=True)
+        print(f"-- {nb_search} simultaneous search per target", flush=True)
+        print(f"-- Targets : {targets}", flush=True)
       for i in range(iterations):
         self.optimizer_AB.zero_grad()####?
         utterances_embeddings = self.encoderB(utterances).reshape(B,nb_search,-1)
@@ -134,9 +134,9 @@ class AgentEBM():
 
       ##### ACTIONS GENERATION
       if verbose:
-        print(f"--- Generating Actions for {targets.shape[0]} targets given a context of {referents.shape[0]} referents")
-        print(f"-- {nb_search} simultaneous search per target")
-        print(f"-- Targets : {targets}")
+        print(f"--- Generating Actions for {targets.shape[0]} targets given a context of {referents.shape[0]} referents", flush=True)
+        print(f"-- {nb_search} simultaneous search per target", flush=True)
+        print(f"-- Targets : {targets}", flush=True)
       for i in range(iterations):
         self.optimizer_AB.zero_grad()####?
         utterances            = self.sensorimotor_system.get_utterances(actions)

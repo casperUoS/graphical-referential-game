@@ -49,14 +49,14 @@ def mean_pairwise_shape_sim(utterances_coords):
 
 def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = True, shared_p = False, n=100, gen="descriptive",config=None):
     str_eval_dataset = [ref_str(dataset[eval_set_idxs][i]) for i in range(dataset[eval_set_idxs].shape[0])]
-    print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.")
-    print(f"---------- Eval Dataset:\n{str_eval_dataset}")
+    print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.", flush=True)
+    print(f"---------- Eval Dataset:\n{str_eval_dataset}", flush=True)
 
     results = {}
 
     for i in range(len(agents)):
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
-        print(f"----- Evaluating Agent {i}")
+        print(f"----- Evaluating Agent {i}", flush=True)
 
         results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
@@ -67,7 +67,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
             results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]}
 
         for e in range(nb_epochs):
-            print(f"- Epoch {e+1}/{nb_epochs}...")
+            print(f"- Epoch {e+1}/{nb_epochs}...", flush=True)
 
             ### Select Speaker & Listener
             speaker     = agents[i]
@@ -132,19 +132,19 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
                     results[i][key]["failure-cases"]["speaker_targets"]  += [fail_shown[i] for i in range(fail_shown.shape[0])]
                     results[i][key]["failure-cases"]["listener_targets"] += [fail_expect[i] for i in range(fail_expect.shape[0])]
                     results[i][key]["failure-cases"]["listener_choices"] += [fail_chosen[i] for i in range(fail_chosen.shape[0])]
-    print("\nDone! :)")
+    print("\nDone! :)", flush=True)
     return results
 
 def eval_population_alation(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = True, shared_p = False, n=100, gen="descriptive",config=None):
     str_eval_dataset = [ref_str(dataset[eval_set_idxs][i]) for i in range(dataset[eval_set_idxs].shape[0])]
-    print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.")
-    print(f"---------- Eval Dataset:\n{str_eval_dataset}")
+    print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.", flush=True)
+    print(f"---------- Eval Dataset:\n{str_eval_dataset}", flush=True)
 
     results = {}
 
     for i in range(len(agents)):
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
-        print(f"----- Evaluating Agent {i}")
+        print(f"----- Evaluating Agent {i}", flush=True)
 
         results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
@@ -155,7 +155,7 @@ def eval_population_alation(agents, dataset, eval_set_idxs, nb_epochs = 100, use
             results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]}
 
         for e in range(nb_epochs):
-            print(f"- Epoch {e+1}/{nb_epochs}...")
+            print(f"- Epoch {e+1}/{nb_epochs}...", flush=True)
 
             ### Select Speaker & Listener
             speaker     = agents[i]
@@ -221,7 +221,7 @@ def eval_population_alation(agents, dataset, eval_set_idxs, nb_epochs = 100, use
                     results[i][key]["failure-cases"]["speaker_targets"]  += [fail_shown[i] for i in range(fail_shown.shape[0])]
                     results[i][key]["failure-cases"]["listener_targets"] += [fail_expect[i] for i in range(fail_expect.shape[0])]
                     results[i][key]["failure-cases"]["listener_choices"] += [fail_chosen[i] for i in range(fail_chosen.shape[0])]
-    print("\nDone! :)")
+    print("\nDone! :)", flush=True)
     return results
 
 

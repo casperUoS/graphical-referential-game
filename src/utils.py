@@ -10,14 +10,14 @@ sns.set_theme()
 sns.set_style("whitegrid", {'axes.grid' : False})
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("##### DEVICE:",device)
+print("##### DEVICE:",device, flush=True)
 
 path  = '/gpfsscratch/rech/imi/uwv18kd/ebng'
 if not (os.path.exists(path)):
     path = os.getcwd()
-    print("==============LOCAL==============")
+    print("==============LOCAL==============", flush=True)
 else:
-    print("==============SERVER==============")
+    print("==============SERVER==============", flush=True)
 
 ##### SYSTEMATIC REFERENTS -> IMAGES & PERSPECTIVES ############################
 if not os.path.exists(path+'data'):

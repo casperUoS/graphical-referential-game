@@ -145,7 +145,7 @@ def display_eval(exp_name,seed):
         if not os.path.exists(key_path):
             os.mkdir(key_path)
 
-        print("---------- Generating Figures...")
+        print("---------- Generating Figures...", flush=True)
 
         ''' POPULATION HISTORY | BASIC '''
         fig,ax = plt.subplots()
@@ -209,11 +209,11 @@ def display_eval(exp_name,seed):
         ''' SUCCESSFUL LEXICON EXAMPLE '''
         lexicon = eval_dict["history_basic"]["lexicon"][-1]
 
-        print("LEXICON")
-        print(lexicon.shape)
-        print(lexicon[0,2])
-        print(lexicon[1,2])
-        print(lexicon[1,4])
+        print("LEXICON", flush=True)
+        print(lexicon.shape, flush=True)
+        print(lexicon[0,2], flush=True)
+        print(lexicon[1,2], flush=True)
+        print(lexicon[1,4], flush=True)
 
         fig     = display_lexicon(lexicon, ["R[0]","R[1]","R[2]","R[3]","R[4]"])
         plt.savefig(key_path+"3-Lexicon_Instance.pdf")
@@ -343,7 +343,7 @@ def display_eval(exp_name,seed):
             tsne_utts    = tsne_compo[feat]["utts"]
             tsne_refs    = tsne_compo[feat]["refs"]
 
-            print(tsne_compo[feat]["refs"].shape)
+            print(tsne_compo[feat]["refs"].shape, flush=True)
             ### Plot both tsne for utts & refs
             fig, axis = plt.subplots(1,2,figsize=(20,10))
             axis[1].scatter(tsne_utts[:n_basics,0],tsne_utts[:n_basics,1],c=colors)
@@ -365,7 +365,7 @@ def display_eval(exp_name,seed):
             plt.savefig(key_path+"9-TSNE-R2-"+str(feat)+".pdf")
             plt.close()
 
-    print("---------- Done! :)")
+    print("---------- Done! :)", flush=True)
 
 
 ''' DISPLAY EVAL OVER ALL SEEDS '''

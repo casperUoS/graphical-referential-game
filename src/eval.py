@@ -11,12 +11,12 @@ os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
 def eval(exp_name, seed, P=100, N=100):
-    print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}")
+    print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
 
     ''' PATH TO RESULTS '''
     seed_path = path + exp_name + "/seed" + str(seed) + "/"
     path_eval = seed_path + "/Eval/"
-    print(f"--------------- Recording results in {path_eval}")
+    print(f"--------------- Recording results in {path_eval}", flush=True)
 
     ''' AGENTS EVALUATION '''
     if not os.path.exists(path_eval + "eval.pt"):
@@ -52,7 +52,7 @@ def eval(exp_name, seed, P=100, N=100):
 
         ''' BASIC HISTORY '''
 
-        print(f"### BASIC HISTORY...")
+        print(f"### BASIC HISTORY...", flush=True)
 
         eval_dict["train_outcomes"] = exp["logs"]["graph_outcomes"]  # Basic Games outcomes (1 per iteration)
 
@@ -67,12 +67,12 @@ def eval(exp_name, seed, P=100, N=100):
         eval_dict["steps"] = steps
 
         if steps == 100:
-            print("ONE-HOT EVAL")
+            print("ONE-HOT EVAL", flush=True)
             N = 1
 
         nb_iterations = (len(eval_dict["train_outcomes"]) // steps) * steps
         for i in range(0, (nb_iterations + 1 if not local else (steps + 1)), steps):
-            print(f"> Iteration {i} / {nb_iterations}")
+            print(f"> Iteration {i} / {nb_iterations}", flush=True)
 
             agents = load_history(seed_path, config, i)[:10]  # Only evaluate a subset of 10 agents maximum
 
@@ -129,7 +129,7 @@ def eval(exp_name, seed, P=100, N=100):
             eval_dict[key1]["results_compo"]["refs"] = results_compo[0]["refs"]
 
             ''' COMPO (2-feats) MATRIX (agent 0)'''
-            print("### COMPOSITIONAL MATRIX...")
+            print("### COMPOSITIONAL MATRIX...", flush=True)
 
             matrix = torch.zeros(5, 5, 52, 52)
             matrix_refs = []
@@ -155,12 +155,12 @@ def eval(exp_name, seed, P=100, N=100):
             eval_dict[key1]["compo_matrix"]["refs"] = matrix_refs
 
             ''' TOPOGRAPHY CORRELATION '''
-            print("### TOPOGRAPHIC UTTERANCES ANALYSIS...")
+            print("### TOPOGRAPHIC UTTERANCES ANALYSIS...", flush=True)
 
             eval_dict[key1]["topography_corr"] = get_topo_per_compo(results_basic, results_compo)
 
             ''' TSNEs - BASICS & COMPO (2-feats) (agent 0)'''
-            print("### EMBEDDINGS T-SNEs...")
+            print("### EMBEDDINGS T-SNEs...", flush=True)
 
             ### BIN 1
             unique_referents_basic = np.unique(results_basic[0]["refs"])
@@ -196,9 +196,9 @@ def eval(exp_name, seed, P=100, N=100):
 
         ''' SAVE RESULTS '''
 
-        print(f"##### SAVING RESULTS IN {path_eval} ...")
+        print(f"##### SAVING RESULTS IN {path_eval} ...", flush=True)
         torch.save(eval_dict, path_eval + "eval.pt")
-        print("##### EVALUATION RESULTS SAVED! :)")
+        print("##### EVALUATION RESULTS SAVED! :)", flush=True)
     else:
         eval_dict = torch.load(path_eval + "eval.pt")
 

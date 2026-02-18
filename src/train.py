@@ -11,8 +11,8 @@ from data import *
 ##### LAUNCH EXPERIMENTS #######################################################
 def launch_exp(config):
     exp_name, seed = config["exp_name"], config["seed"]
-    print(f"##### TRAINING - EXPERIMENT {exp_name} - SEED {seed}")
-    print(f"##### CONFIG:\n {config}\n\n")
+    print(f"##### TRAINING - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
+    print(f"##### CONFIG:\n {config}\n\n", flush=True)
 
     ''' SET SEED '''
     seed = config["seed"]
@@ -69,7 +69,7 @@ def launch_exp(config):
 
 
 def train_population(agents, train_set, config, sensorimotor_system, seed_path):
-    print(f"### STARTING LANGUAGE GAMES...")
+    print(f"### STARTING LANGUAGE GAMES...", flush=True)
 
     ''' LOGS & PARAMETERS '''
     logs = {"graph_outcomes": []}
@@ -122,19 +122,19 @@ def train_population(agents, train_set, config, sensorimotor_system, seed_path):
 
         if i % 100 == 0:
             mean_outcomes = np.mean(logs["graph_outcomes"][-100:])
-            print(f"> Iteration {i} / {nb_iter} |\t\t{mean_outcomes * 100}% success rate")
+            print(f"> Iteration {i} / {nb_iter} |\t\t{mean_outcomes * 100}% success rate", flush=True)
 
         if i == 0 or (config["use_img_perspectives"] and (i + 1) % 100 == 0) or (
                 not config["use_img_perspectives"] and (i + 1) % 100 == 0):
-            print(f"\n# Saving Population-{i}...")
-            print((config["use_img_perspectives"] and (i + 1) % 1000))
+            print(f"\n# Saving Population-{i}...", flush=True)
+            print((config["use_img_perspectives"] and (i + 1) % 1000), flush=True)
             torch.save(logs, seed_path + "logs.pt")
             save_history(seed_path, agents, (i if i == 0 else i + 1))
-            print("# Done!\n")
+            print("# Done!\n", flush=True)
 
-    print("### ENDING LANGUAGE GAMES...")
+    print("### ENDING LANGUAGE GAMES...", flush=True)
     save_results(seed_path, agents, logs)
-    print("### TRAINING RESULTS SAVED! :)\n\n\n")
+    print("### TRAINING RESULTS SAVED! :)\n\n\n", flush=True)
 
 
 ''' SAVE RESULTS '''
