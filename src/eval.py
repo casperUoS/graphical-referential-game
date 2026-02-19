@@ -10,7 +10,7 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-def eval(exp_name, seed, no_ss, P=10, N=100):
+def eval(exp_name, seed, no_ss, P=100, N=100):
     print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
 
     ''' PATH TO RESULTS '''
