@@ -47,7 +47,7 @@ def mean_pairwise_shape_sim(utterances_coords):
 
 ''' POPULATION EVALUATION '''
 
-def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = True, shared_p = False, n=100, gen="descriptive",config=None):
+def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = True, shared_p = False, n=100, gen="descriptive",no_ss=False):
     str_eval_dataset = [ref_str(dataset[eval_set_idxs][i]) for i in range(dataset[eval_set_idxs].shape[0])]
     print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.", flush=True)
     print(f"---------- Eval Dataset:\n{str_eval_dataset}", flush=True)
@@ -91,12 +91,13 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
 
                 ### Get Speaker's utterances
                 targets = torch.arange(0,batch_refs.shape[0])
-                if config['no_ss']:
+                if no_ss:
                     utterances, _, coords, losses = speaker.get_direct_utterance(batch_refs_p, targets, iterations=n,
                                                                         nb_search=64, verbose=False)
                 else:
                     utterances,_,coords,losses = speaker.get_actions(batch_refs_p, targets, iterations=n, nb_search=64, verbose=False, discriminative=(gen=="discriminative"))
                 utterances, losses    = utterances.detach().cpu(), losses.detach().cpu()
+                coords = coords.detach().cpu() if isinstance(coords, torch.Tensor) else coords
 
                 ### Get Referents keys & Refs/Utts Embeddings
                 with torch.no_grad():

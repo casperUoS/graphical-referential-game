@@ -4,7 +4,7 @@ import torch
 from utils import path, device
 
 import os
-path = "/Users/tristankarch/Downloads/Results/"
+
 def display_legend(ax, legends, fontsize=16):
     for marker, color, label in legends:
         ax.scatter([],[],marker=marker,label=label,c=color,s=100)
@@ -132,8 +132,8 @@ def display_matrix(compo_matrix, key_path):
 ################################################################################
 ##### DISPLAY EVALUATION FIGURES ###############################################
 def display_eval(exp_name,seed):
-    eval_path = path+exp_name+"/seed"+str(seed)+"/Eval/"
-    eval_dict = torch.load(eval_path+"eval.pt")
+    eval_path = path+"/results/"+exp_name+"/seed"+str(seed)+"/Eval/"
+    eval_dict = torch.load(eval_path+"eval.pt", weights_only=False)
 
     if "steps" not in eval_dict.keys():
         eval_dict["steps"] = 1000

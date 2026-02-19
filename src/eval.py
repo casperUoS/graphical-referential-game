@@ -10,11 +10,11 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-def eval(exp_name, seed, P=100, N=100):
+def eval(exp_name, seed, no_ss, P=10, N=100):
     print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
 
     ''' PATH TO RESULTS '''
-    seed_path = path + exp_name + "/seed" + str(seed) + "/"
+    seed_path = path + "/results/" + exp_name + "/seed" + str(seed) + "/"
     path_eval = seed_path + "/Eval/"
     print(f"--------------- Recording results in {path_eval}", flush=True)
 
@@ -79,7 +79,7 @@ def eval(exp_name, seed, P=100, N=100):
             ### Basic
             results_basic_h = eval_population(agents, dataset, bin_idxs[1], nb_epochs=P,
                                               use_p=config["use_img_perspectives"],
-                                              shared_p=config["shared_perspective"], n=N)
+                                              shared_p=config["shared_perspective"], n=N, no_ss=no_ss)
             lexicon = get_lexicon_example(results_basic_h)
             cA, cP, cR = get_coherences(results_basic_h)
 

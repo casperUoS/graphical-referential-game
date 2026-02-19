@@ -41,6 +41,7 @@ config = {
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", type=str, default="test")
+    parser.add_argument("--mode", type=str, default="test")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max_iterations", type=int, default=100000)
 
@@ -65,10 +66,10 @@ if __name__ == "__main__":
 
     opts = parse_arguments()
 
-    exp_name = opts.exp_name
+    mode = opts.mode
     seed = opts.seed
 
-    if exp_name == "test":
+    if mode == "test":
         # !!!! CHANGE BACK TO 100/10000
         config["action_it"] = 10
         config["max_iterations"] = 10
@@ -77,27 +78,27 @@ if __name__ == "__main__":
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
-    elif exp_name == "base":
+    elif mode == "base":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
-    elif exp_name == "base-shared":
+    elif mode == "base-shared":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
         config["shared_perspective"] = True
-    elif exp_name == "base-compo":
+    elif mode == "base-compo":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
         config["bins"] = [1, 2]
-    elif exp_name == "base-compo-noTemp":
+    elif mode == "base-compo-noTemp":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
@@ -105,7 +106,7 @@ if __name__ == "__main__":
         config["ood"] = False
         config["bins"] = [1, 2]
         config["use_temp"] = False
-    elif exp_name == "base-compo-noBaseline":
+    elif mode == "base-compo-noBaseline":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
@@ -113,7 +114,7 @@ if __name__ == "__main__":
         config["ood"] = False
         config["bins"] = [1, 2]
         config["use_baseline"] = False
-    elif exp_name == "base-transfer":
+    elif mode == "base-transfer":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
@@ -121,44 +122,44 @@ if __name__ == "__main__":
         config["ood"] = False
         config["bins"] = [1, 2]
         config["transfer_refs"] = torch.tensor([[1, 1, 0, 0, 0], [0, 1, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 0, 1, 1]])
-    elif exp_name == "n-10":
+    elif mode == "n-10":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 10
         config["nb_features"] = 5
         config["ood"] = False
-    elif exp_name == "n-100":
+    elif mode == "n-100":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 100
         config["nb_features"] = 5
         config["ood"] = False
-    elif exp_name == "f-10":
+    elif mode == "f-10":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
         config["nb_features"] = 10
         config["ood"] = False
-    elif exp_name == "ood":
+    elif mode == "ood":
         config["max_iterations"] = 5000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = True
-    elif exp_name == "one-hot":
+    elif mode == "one-hot":
         config["max_iterations"] = 1000
         config["use_img_perspectives"] = False
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
-    elif exp_name == "one-hot-no-ss":
+    elif mode == "one-hot-no-ss":
         config["max_iterations"] = 1000
         config["use_img_perspectives"] = False
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
         config["no_ss"] = True
-    elif exp_name == "base-no-ss":
+    elif mode == "base-no-ss":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
         config["nb_agents"] = 2
@@ -170,7 +171,7 @@ if __name__ == "__main__":
 
     ''' Experiment Seed & Name '''
     config["seed"] = seed
-    config["exp_name"] = exp_name
+    config["exp_name"] = opts.exp_name
     config["max_iterations"] = opts.max_iterations
 
     ''' Experiment path '''
@@ -183,6 +184,6 @@ if __name__ == "__main__":
 
     ''' Evaluate Population '''
     if config["no_ss"]:
-        eval_ablation(exp_name, seed)
+        eval_ablation(config["exp_name"], seed)
     else:
-        eval(exp_name, seed)
+        eval(config["exp_name"], seed, config["no_ss"])
