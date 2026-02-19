@@ -171,6 +171,7 @@ if __name__ == "__main__":
     ''' Experiment Seed & Name '''
     config["seed"] = seed
     config["exp_name"] = exp_name
+    config["max_iterations"] = opts.max_iterations
 
     ''' Experiment path '''
     exp_path = os.path.join(path, 'results', config["exp_name"] + "/")
