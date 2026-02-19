@@ -124,7 +124,7 @@ def train_population(agents, train_set, config, sensorimotor_system, seed_path):
             mean_outcomes = np.mean(logs["graph_outcomes"][-100:])
             print(f"> Iteration {i} / {nb_iter} |\t\t{mean_outcomes * 100}% success rate", flush=True)
 
-        if i == 0 or (config["use_img_perspectives"] and (i + 1) % 100 == 0) or (
+        if i == 0 or (config["use_img_perspectives"] and (i + 1) % 1000 == 0) or (
                 not config["use_img_perspectives"] and (i + 1) % 100 == 0):
             print(f"\n# Saving Population-{i}...", flush=True)
             print((config["use_img_perspectives"] and (i + 1) % 1000), flush=True)
