@@ -21,9 +21,9 @@ else:
 
 ##### SYSTEMATIC REFERENTS -> IMAGES & PERSPECTIVES ############################
 if not os.path.exists(path+'data'):
-    mnist_train = torchvision.datasets.MNIST(root=os.path.join(path,'data'), train=True, download=True, transform=torchvision.transforms.ToTensor())
+    CIFAR10_train = torchvision.datasets.CIFAR10(root=os.path.join(path,'data'), train=True, download=True, transform=torchvision.transforms.ToTensor())
 else:
-    mnist_train = torchvision.datasets.MNIST(root=os.path.join(path,'data'), train=True, download=False, transform=torchvision.transforms.ToTensor())
+    CIFAR10_train = torchvision.datasets.CIFAR10(root=os.path.join(path,'data'), train=True, download=False, transform=torchvision.transforms.ToTensor())
 
 
 ##### DISPLAY FUNCTIONS ########################################################
@@ -54,7 +54,7 @@ def show_imgs(imgs,labels=None):
 def sample_nbs(features):
     nb_imgs = []
     for i in features:
-        imgs    = mnist_train.data[mnist_train.targets==i]
+        imgs    = CIFAR10_train.data[CIFAR10_train.targets==i]
         idx     = random.randint(0,imgs.shape[0]-1)
         nb_imgs.append(imgs[idx])
     return nb_imgs
