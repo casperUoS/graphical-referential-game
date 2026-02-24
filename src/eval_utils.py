@@ -64,7 +64,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
             results[i][key]["precisions"]    = []
             results[i][key]["recalls"]       = []
             results[i][key]["f1-scores"]     = []
-            results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]}
+            results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]} #sjafiod
 
         for e in range(nb_epochs):
             print(f"- Epoch {e+1}/{nb_epochs}...", flush=True)
