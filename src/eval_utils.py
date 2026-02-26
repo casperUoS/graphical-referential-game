@@ -64,7 +64,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
             results[i][key]["precisions"]    = []
             results[i][key]["recalls"]       = []
             results[i][key]["f1-scores"]     = []
-            results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]} #sjafiod
+            results[i][key]["failure-cases"] = {"speaker_targets":[], "listener_targets":[], "listener_choices":[]}
 
         for e in range(nb_epochs):
             print(f"- Epoch {e+1}/{nb_epochs}...", flush=True)
@@ -82,14 +82,12 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
 
                 ### If we use perspectives, convert referents into images.
                 if use_p:
-                    print("ABABBDDDAAAA")
                     context_p = convert_to_imgs(batch_refs)                     # Listener's Context perspective
                     if shared_p: batch_refs_p = context_p                       # Shared Speaker's Target perspective
                     else:        batch_refs_p = convert_to_imgs(batch_refs)     # Unshared Speaker's Target perspective
                 else:
                     context_p    = batch_refs.to(device)
                     batch_refs_p = batch_refs.to(device)
-                print("OMLLLLLLL", batch_refs_p.shape)
 
                 ### Get Speaker's utterances
                 targets = torch.arange(0,batch_refs.shape[0])
@@ -104,8 +102,6 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
                 ### Get Referents keys & Refs/Utts Embeddings
                 with torch.no_grad():
                     embeddings_refs, embeddings_utts = speaker.encoderA(batch_refs_p.to(device)).detach().cpu(), speaker.encoderB(utterances.to(device)).detach().cpu()
-                    print("embeddings_refs.size()", embeddings_refs.size())
-                    print("embeddings_utts.size()", embeddings_utts.size())
                     results[i]["reps_refs"]   = torch.cat((results[i]["reps_refs"],embeddings_refs))
                     results[i]["reps_utts"]   = torch.cat((results[i]["reps_utts"],embeddings_utts))
                     results[i]["refs"]       += [ref_str(ref) for ref in batch_refs]

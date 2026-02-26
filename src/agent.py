@@ -27,10 +27,10 @@ class AgentEBM():
     if not use_img_perspectives:
         self.encoderA = nn.Sequential(nn.Linear(referent_shape, embedding_size))
     else:
-        self.encoderA = nn.Sequential(nn.Conv2d(1,  8,  3, stride=2, padding=1), nn.ReLU(True),
+        self.encoderA = nn.Sequential(nn.Conv2d(3,  8,  3, stride=2, padding=1), nn.ReLU(True),
                                       nn.Conv2d(8,  16, 3, stride=2, padding=1), nn.ReLU(True),
                                       nn.Conv2d(16, 32, 3, stride=2, padding=0), nn.ReLU(True),
-                                      nn.Flatten(), nn.Linear(5408, 128), nn.ReLU(True), nn.Linear(128, embedding_size))
+                                      nn.Flatten(), nn.Linear(7200, 128), nn.ReLU(True), nn.Linear(128, embedding_size))
 
     ##### ENCODER B | UTTERANCES
     self.encoderB = nn.Sequential(nn.Conv2d(1,  8,  3, stride=2, padding=1), nn.ReLU(True),
@@ -217,7 +217,7 @@ class AgentEBM():
         loss    = torch.matmul(loss1,(rewards-baseline)).mean() / (rewards.shape[0]) + torch.matmul(loss2,(rewards-baseline)).mean() / (rewards.shape[0])
     else:
         referents_imgs        = convert_to_imgs(referents,N,ood=ood)
-        referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,1,112,112)).reshape(B,N,-1)
+        referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,128,128)).reshape(B,N,-1)
         utterances_embeddings = self.encoderB(utterances.detach())
         sims                  = self.cosine_sims(referents_embeddings,utterances_embeddings)
         targets = (torch.ones(B,N) * torch.arange(0,B).unsqueeze(1)).long().to(device)
@@ -244,7 +244,7 @@ class AgentEBM():
       loss    = loss1 + loss2
     else:
       referents_imgs        = convert_to_imgs(referents,B,ood=ood)
-      referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,1,112,112)).reshape(N,B,-1)
+      referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,128,128)).reshape(N,B,-1)
       utterances_embeddings = self.encoderB(utterances.detach())
       sims    = self.cosine_sims(referents_embeddings,utterances_embeddings)
       targets = (torch.ones(N,B) * torch.arange(0,N).unsqueeze(1)).long().to(device)
