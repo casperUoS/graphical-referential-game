@@ -173,17 +173,17 @@ def display_eval(exp_name,seed):
         plt.savefig(key_path+"1-Training_History_Basic.pdf")
         plt.close()
 
-        ''' POPULATION HISTORY | COMPO '''
-
-        for key2 in ["auto","social"]:
-            compo_perf = eval_dict[key]["results_compo"][key2]
-            o,p,r,f1   = np.mean(compo_perf["o"]), np.mean(compo_perf["p"]), np.mean(compo_perf["r"]), np.mean(compo_perf["f1"])
-
-            plt.figure()
-            plt.bar(["o","p","r","f1"],[o.mean(),p.mean(),r.mean(),f1.mean()])
-            plt.ylim(0,1.1)
-            plt.savefig(key_path+"2-Compo_Perf_"+key2+".pdf")
-            plt.close()
+        # ''' POPULATION HISTORY | COMPO '''
+        #
+        # for key2 in ["auto","social"]:
+        #     compo_perf = eval_dict[key]["results_compo"][key2]
+        #     o,p,r,f1   = np.mean(compo_perf["o"]), np.mean(compo_perf["p"]), np.mean(compo_perf["r"]), np.mean(compo_perf["f1"])
+        #
+        #     plt.figure()
+        #     plt.bar(["o","p","r","f1"],[o.mean(),p.mean(),r.mean(),f1.mean()])
+        #     plt.ylim(0,1.1)
+        #     plt.savefig(key_path+"2-Compo_Perf_"+key2+".pdf")
+        #     plt.close()
 
         '''
         for key in ["auto", "social"]:
@@ -261,52 +261,52 @@ def display_eval(exp_name,seed):
             plt.close()
         '''
 
-        ''' COMPO (2-feats) FAILURE CASES '''
-
-        if eval_dict["steps"] != 100:
-            display_failures(eval_dict[key]["compo_fails"],key_path)
-
-        ''' COMPO (2-feats) MATRIX '''
-
-        display_matrix(eval_dict[key]["compo_matrix"],key_path)
-
-        ''' TOPOGRAPHY CORRELATION '''
-
-        results_topo = eval_dict[key]["topography_corr"]
-        topo_colors  = ["black","orange","blue","green"]
-
-        for ref in results_topo.keys():
-
-            A, B = ref[2], ref[5]
-
-            legends = [("o","green","R["+A+","+B+"]"), ("o","blue","R["+A+",X]"), ("o","orange","R[X,"+B+"]"), ("x","black","R[X,X]")]
-
-            dA, dB, colors = np.array(results_topo[ref]["dA"]), np.array(results_topo[ref]["dB"]), np.array(results_topo[ref]["colors"])
-
-            mask_other       = (colors == 0)
-            mask_B           = (colors == 1)
-            mask_A           = (colors == 2)
-            mask_COMPO       = (colors == 3)
-
-            plot1 = plt.scatter(dA[mask_other],dB[mask_other] , marker="x", s=12, color="black", alpha=1)
-            plot2 = plt.scatter(dA[mask_B],dB[mask_B]         , marker="o", s=12, color="orange", alpha=0.4)
-            plot3 = plt.scatter(dA[mask_A],dB[mask_A]         , marker="o", s=12, color="blue", alpha=0.4)
-            plot4 = plt.scatter(dA[mask_COMPO],dB[mask_COMPO] , marker="o", s=12, color="green", alpha=1)
-
-            strA = "R["+ref[2]+"]"
-            strB = "R["+ref[5]+"]"
-            plt.xlabel(f"Hausdorff Distance ({strA})",fontsize=20)
-            plt.ylabel(f"Hausdorff Distance ({strB})",fontsize=20)
-
-            plt.xticks(fontsize=16)
-            plt.yticks(fontsize=16)
-
-            plt.tight_layout()
-
-            display_legend(plt, legends)
-
-            plt.savefig(key_path+"7-Topography_"+ref+".pdf")
-            plt.close()
+        # ''' COMPO (2-feats) FAILURE CASES '''
+        #
+        # if eval_dict["steps"] != 100:
+        #     display_failures(eval_dict[key]["compo_fails"],key_path)
+        #
+        # ''' COMPO (2-feats) MATRIX '''
+        #
+        # display_matrix(eval_dict[key]["compo_matrix"],key_path)
+        #
+        # ''' TOPOGRAPHY CORRELATION '''
+        #
+        # results_topo = eval_dict[key]["topography_corr"]
+        # topo_colors  = ["black","orange","blue","green"]
+        #
+        # for ref in results_topo.keys():
+        #
+        #     A, B = ref[2], ref[5]
+        #
+        #     legends = [("o","green","R["+A+","+B+"]"), ("o","blue","R["+A+",X]"), ("o","orange","R[X,"+B+"]"), ("x","black","R[X,X]")]
+        #
+        #     dA, dB, colors = np.array(results_topo[ref]["dA"]), np.array(results_topo[ref]["dB"]), np.array(results_topo[ref]["colors"])
+        #
+        #     mask_other       = (colors == 0)
+        #     mask_B           = (colors == 1)
+        #     mask_A           = (colors == 2)
+        #     mask_COMPO       = (colors == 3)
+        #
+        #     plot1 = plt.scatter(dA[mask_other],dB[mask_other] , marker="x", s=12, color="black", alpha=1)
+        #     plot2 = plt.scatter(dA[mask_B],dB[mask_B]         , marker="o", s=12, color="orange", alpha=0.4)
+        #     plot3 = plt.scatter(dA[mask_A],dB[mask_A]         , marker="o", s=12, color="blue", alpha=0.4)
+        #     plot4 = plt.scatter(dA[mask_COMPO],dB[mask_COMPO] , marker="o", s=12, color="green", alpha=1)
+        #
+        #     strA = "R["+ref[2]+"]"
+        #     strB = "R["+ref[5]+"]"
+        #     plt.xlabel(f"Hausdorff Distance ({strA})",fontsize=20)
+        #     plt.ylabel(f"Hausdorff Distance ({strB})",fontsize=20)
+        #
+        #     plt.xticks(fontsize=16)
+        #     plt.yticks(fontsize=16)
+        #
+        #     plt.tight_layout()
+        #
+        #     display_legend(plt, legends)
+        #
+        #     plt.savefig(key_path+"7-Topography_"+ref+".pdf")
+        #     plt.close()
 
         ''' TSNEs - BASICS & COMPO (2-feats) '''
 
@@ -336,34 +336,34 @@ def display_eval(exp_name,seed):
         plt.savefig(key_path+"8-TSNE-R1.pdf")
         plt.close()
 
-        tsne_compo = eval_dict[key]["tsne_compos"]
-        for feat in tsne_compo.keys():
-            legends_compo      = legends+[("s","black",feat)]
-            n_basics, n_compos = len(colors), (tsne_compo[feat]["utts"].shape[0] - len(colors))
-            tsne_utts    = tsne_compo[feat]["utts"]
-            tsne_refs    = tsne_compo[feat]["refs"]
-
-            print(tsne_compo[feat]["refs"].shape, flush=True)
-            ### Plot both tsne for utts & refs
-            fig, axis = plt.subplots(1,2,figsize=(20,10))
-            axis[1].scatter(tsne_utts[:n_basics,0],tsne_utts[:n_basics,1],c=colors)
-            axis[0].scatter(tsne_refs[:n_basics,0],tsne_refs[:n_basics,1],c=colors)
-            for i in range(n_compos):
-                axis[1].scatter(tsne_utts[n_basics+i,0],tsne_utts[n_basics+i,1],c="black",marker="s")
-                axis[0].scatter(tsne_refs[n_basics+i,0],tsne_refs[n_basics+i,1],c="black",marker="s")
-
-            display_legend(axis[1], legends_compo, 30)
-
-            axis[1].set_title("Utterances Embeddings",fontsize=40)
-            axis[0].set_title("Referents Embeddings",fontsize=40)
-
-            axis[1].set_xticks([])
-            axis[1].set_yticks([])
-            axis[0].set_xticks([])
-            axis[0].set_yticks([])
-            plt.tight_layout()
-            plt.savefig(key_path+"9-TSNE-R2-"+str(feat)+".pdf")
-            plt.close()
+        # tsne_compo = eval_dict[key]["tsne_compos"]
+        # for feat in tsne_compo.keys():
+        #     legends_compo      = legends+[("s","black",feat)]
+        #     n_basics, n_compos = len(colors), (tsne_compo[feat]["utts"].shape[0] - len(colors))
+        #     tsne_utts    = tsne_compo[feat]["utts"]
+        #     tsne_refs    = tsne_compo[feat]["refs"]
+        #
+        #     print(tsne_compo[feat]["refs"].shape, flush=True)
+        #     ### Plot both tsne for utts & refs
+        #     fig, axis = plt.subplots(1,2,figsize=(20,10))
+        #     axis[1].scatter(tsne_utts[:n_basics,0],tsne_utts[:n_basics,1],c=colors)
+        #     axis[0].scatter(tsne_refs[:n_basics,0],tsne_refs[:n_basics,1],c=colors)
+        #     for i in range(n_compos):
+        #         axis[1].scatter(tsne_utts[n_basics+i,0],tsne_utts[n_basics+i,1],c="black",marker="s")
+        #         axis[0].scatter(tsne_refs[n_basics+i,0],tsne_refs[n_basics+i,1],c="black",marker="s")
+        #
+        #     display_legend(axis[1], legends_compo, 30)
+        #
+        #     axis[1].set_title("Utterances Embeddings",fontsize=40)
+        #     axis[0].set_title("Referents Embeddings",fontsize=40)
+        #
+        #     axis[1].set_xticks([])
+        #     axis[1].set_yticks([])
+        #     axis[0].set_xticks([])
+        #     axis[0].set_yticks([])
+        #     plt.tight_layout()
+        #     plt.savefig(key_path+"9-TSNE-R2-"+str(feat)+".pdf")
+        #     plt.close()
 
     print("---------- Done! :)", flush=True)
 
