@@ -35,7 +35,8 @@ config = {
     "transfer_refs": None,
     "use_temp": True,
     "use_baseline": True,
-    "no_ss": False
+    "no_ss": False,
+    "vgg_path": None,
 }
 
 def parse_arguments():
@@ -44,6 +45,7 @@ def parse_arguments():
     parser.add_argument("--mode", type=str, default="test")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max_iterations", type=int, default=100000)
+    parser.add_argument("--vgg_path", type=str, default=None)
 
     params = sys.argv[1:]
     opts = parser.parse_args(params)
@@ -173,6 +175,7 @@ if __name__ == "__main__":
     config["seed"] = seed
     config["exp_name"] = opts.exp_name
     config["max_iterations"] = opts.max_iterations
+    config["vgg_path"] = opts.vgg_path
 
     ''' Experiment path '''
     exp_path = os.path.join(path, 'results', config["exp_name"] + "/")

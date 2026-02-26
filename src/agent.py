@@ -9,7 +9,7 @@ from resnet import *
 class AgentEBM():
 
   def __init__(self, sensorimotor_system, embedding_size=32, action_size=2*20, association_lr=0.0001, action_lr=0.01, use_img_perspectives=False, referent_shape=10,
-                     T_max=1000, use_temp=True, use_baseline=True):
+                     T_max=1000, use_temp=True, use_baseline=True, vgg_path=None):
     ##### PARAMETERS
     self.use_img_perspectives = use_img_perspectives
     self.sensorimotor_system  = sensorimotor_system
@@ -23,9 +23,20 @@ class AgentEBM():
     self.use_temp     = use_temp
     self.use_baseline = use_baseline
 
+    self.vgg_path = vgg_path
+    self.vgg = None
+
     ##### ENCODER A | REFERENTS
     if not use_img_perspectives:
         self.encoderA = nn.Sequential(nn.Linear(referent_shape, embedding_size))
+    elif self.vgg_path:
+        self.vgg = torch.load(self.vgg_path, weights_only=False)
+        for param in self.vgg.parameters():
+            param.requires_grad = False
+        self.vgg.eval()
+        class Flatten(nn.Module):
+            def forward(self, x): return x.view(x.size(0), -1)
+        self.encoderA = nn.Sequential(self.vgg, Flatten(), nn.Linear(512, 128), nn.ReLU(True), nn.Linear(128, embedding_size))
     else:
         self.encoderA = nn.Sequential(nn.Conv2d(3,  8,  3, stride=2, padding=1), nn.ReLU(True),
                                       nn.Conv2d(8,  16, 3, stride=2, padding=1), nn.ReLU(True),
@@ -49,6 +60,8 @@ class AgentEBM():
   def set_train(self):
     self.encoderA.train()
     self.encoderB.train()
+    if self.vgg:
+        self.vgg.eval()
 
   def set_eval(self):
     self.encoderA.eval()
@@ -217,7 +230,9 @@ class AgentEBM():
         loss    = torch.matmul(loss1,(rewards-baseline)).mean() / (rewards.shape[0]) + torch.matmul(loss2,(rewards-baseline)).mean() / (rewards.shape[0])
     else:
         referents_imgs        = convert_to_imgs(referents,N,ood=ood)
-        referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,128,128)).reshape(B,N,-1)
+        # print(referents_imgs.shape)
+        # print(referents_imgs.reshape(-1,3,32,32).shape, flush=True)
+        referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,32*1,32*1)).reshape(B,N,-1)
         utterances_embeddings = self.encoderB(utterances.detach())
         sims                  = self.cosine_sims(referents_embeddings,utterances_embeddings)
         targets = (torch.ones(B,N) * torch.arange(0,B).unsqueeze(1)).long().to(device)
@@ -244,7 +259,7 @@ class AgentEBM():
       loss    = loss1 + loss2
     else:
       referents_imgs        = convert_to_imgs(referents,B,ood=ood)
-      referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,128,128)).reshape(N,B,-1)
+      referents_embeddings  = self.encoderA(referents_imgs.reshape(-1,3,32*1,32*1)).reshape(N,B,-1)
       utterances_embeddings = self.encoderB(utterances.detach())
       sims    = self.cosine_sims(referents_embeddings,utterances_embeddings)
       targets = (torch.ones(N,B) * torch.arange(0,N).unsqueeze(1)).long().to(device)
