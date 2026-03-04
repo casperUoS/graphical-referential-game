@@ -87,7 +87,7 @@ class AgentEBM():
 
       ##### GET HISTORY OPTION
       utt_history   = torch.empty(B, 0,52,52)
-      coord_history = torch.empty(B, 0,20+2)
+      coord_history = torch.empty(B, 0,3*(20+2))
 
       ##### ACTIONS GENERATION
       if verbose:
@@ -143,7 +143,7 @@ class AgentEBM():
 
       ##### GET HISTORY OPTION
       utt_history   = torch.empty(B, 0,52,52)
-      coord_history = torch.empty(B, 0,20+2)
+      coord_history = torch.empty(B, 0,3*(20+2))
 
       ##### ACTIONS GENERATION
       if verbose:

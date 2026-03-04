@@ -27,7 +27,7 @@ config = {
     "max_iterations": 10000,  # Max nb of training iterations
     "use_img_perspectives": True,  # Convert vectors referents into CIFAR10 compositions?
     "ss_class": "dmp",  # Sensorimotor system class
-    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 52, "th": 1e-2},  # Sensorimotor system params
+    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 52, "th": 1e-2, "n_strokes":1},  # Sensorimotor system params
     "shared_perspective": False,
     "ood": False,
     "nb_features": 5,
@@ -86,6 +86,14 @@ if __name__ == "__main__":
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
+    elif mode == "base-multi-stroke":
+        config["max_iterations"] = 10000
+        config["use_img_perspectives"] = True
+        config["nb_agents"] = 2
+        config["nb_features"] = 5
+        config["ood"] = False
+        config["ss_params"]["n_strokes"] = 3
+        config["action_size"] = 3* config["action_size"]
     elif mode == "base-shared":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True

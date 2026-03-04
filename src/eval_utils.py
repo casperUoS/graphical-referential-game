@@ -58,7 +58,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
         print(f"----- Evaluating Agent {i}", flush=True)
 
-        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
+        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,3*(20+2)),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
             results[i][key]["outcomes"]      = []
             results[i][key]["precisions"]    = []
@@ -371,7 +371,7 @@ def get_coherences(results):
 
         ### A-COHERENCE
         for j in range(ref_mask.sum()):
-            coord_set = torch.empty(0,20 + 2)
+            coord_set = torch.empty(0,3*(20 + 2))
             for i in results.keys():
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][j].unsqueeze(0)))
             a_coherences.append(mean_pairwise_shape_sim(coord_set))
@@ -379,7 +379,7 @@ def get_coherences(results):
     ### R-COHERENCE
     for p in range(nb_perspectives):
         for i in results.keys():
-            coord_set = torch.empty(0,20 + 2)
+            coord_set = torch.empty(0,3*(20 + 2))
             for ref in unique_referents:
                 ref_mask  = (np.array(referents) == ref)
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][p].unsqueeze(0)))
