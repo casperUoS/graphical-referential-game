@@ -91,8 +91,8 @@ def eval(exp_name, seed, no_ss, P=100, N=100):
             eval_dict["history_basic"]["lexicon"].append(lexicon)
             eval_dict["history_basic"]["sem_score"].append(sem_score)
             eval_dict["history_basic"]["sym_acc"].append(sym_acc)
-            print("sem_score:", sem_score)
-            print("sym_acc:", sym_acc)
+            print("sem_score: ", sem_score)
+            print("sym_acc: ", sym_acc)
 
         ### Last Population Results
         eval_dict["results_basic"] = results_basic_h
