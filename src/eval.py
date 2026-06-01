@@ -10,7 +10,7 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-def eval(exp_name, seed, no_ss, P=7, N=100):
+def eval(exp_name, seed, no_ss, P=100, N=100):
     print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
 
     ''' PATH TO RESULTS '''
@@ -82,12 +82,17 @@ def eval(exp_name, seed, no_ss, P=7, N=100):
                                               shared_p=config["shared_perspective"], n=N, no_ss=no_ss)
             lexicon = get_lexicon_example(results_basic_h)
             cA, cP, cR = get_coherences(results_basic_h)
+            sym_loss, sym_acc, sem_score = get_symbolicity(results_basic_h)
 
             ### Update history
             eval_dict["history_basic"]["cP"].append(cP)
             eval_dict["history_basic"]["cA"].append(cA)
             eval_dict["history_basic"]["cR"].append(cR)
             eval_dict["history_basic"]["lexicon"].append(lexicon)
+            eval_dict["history_basic"]["sem_score"].append(sem_score)
+            eval_dict["history_basic"]["sym_acc"].append(sym_acc)
+            print("sem_score:", sem_score)
+            print("sym_acc:", sym_acc)
 
         ### Last Population Results
         eval_dict["results_basic"] = results_basic_h
@@ -193,6 +198,8 @@ def eval(exp_name, seed, no_ss, P=7, N=100):
 
             eval_dict[key1]["tsne_basics"] = tsne_basics
             # eval_dict[key1]["tsne_compos"] = tsne_compos
+
+
 
         ''' SAVE RESULTS '''
 

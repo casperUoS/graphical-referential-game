@@ -92,6 +92,7 @@ if __name__ == "__main__":
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
+        config["ss_params"]["n"] = 4
         config["ss_params"]["n_strokes"] = 3
         config["action_size"] = 3* config["action_size"]
     elif mode == "base-shared":
