@@ -53,7 +53,7 @@ def launch_exp(config):
         use_baseline = True if not ("use_baseline" in config.keys()) else config["use_baseline"]
         agent = AgentEBM(sensorimotor_system, config["embedding_size"], config["action_size"], config["assoc_lr"],
                          config["action_lr"], config["use_img_perspectives"], config["nb_features"],
-                         config["max_iterations"], use_temp=use_temp, use_baseline=use_baseline)
+                         config["max_iterations"], use_temp=use_temp, use_baseline=use_baseline, vgg_path=config["vgg_path"],)
         if None is not agents_path:
             agent_dict = torch.load(agents_path + "agent" + str(i) + ".pt")
             agent.temp = agent_dict["temp"].to(device)
@@ -172,7 +172,7 @@ def load_exp(seed_path):
         use_baseline = True if not ("use_baseline" in config.keys()) else config["use_baseline"]
         agent = AgentEBM(sensorimotor_system, config["embedding_size"], config["action_size"], config["assoc_lr"],
                          config["action_lr"], config["use_img_perspectives"], config["nb_features"],
-                         config["max_iterations"], use_temp, use_baseline)
+                         config["max_iterations"], use_temp, use_baseline, vgg_path=config["vgg_path"])
         agent_dict = torch.load(os.path.join(agents_path, "agent" + str(i) + ".pt"), map_location=device)
         agent.temp = agent_dict["temp"].to(device)
         agent.encoderA.load_state_dict(agent_dict["encoderA"])
@@ -220,7 +220,7 @@ def load_history(seed_path, config, iteration):
         use_baseline = True if not ("use_baseline" in config.keys()) else config["use_baseline"]
         agent = AgentEBM(sensorimotor_system, config["embedding_size"], config["action_size"], config["assoc_lr"],
                          config["action_lr"], config["use_img_perspectives"], config["nb_features"],
-                         config["max_iterations"], use_temp, use_baseline)
+                         config["max_iterations"], use_temp, use_baseline, vgg_path=config["vgg_path"],)
         agent_dict = torch.load(os.path.join(history_path, "agent" + str(i) + ".pt"), map_location=device)
         agent.temp = agent_dict["temp"].to(device)
         agent.encoderA.load_state_dict(agent_dict["encoderA"])

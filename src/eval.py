@@ -82,12 +82,17 @@ def eval(exp_name, seed, no_ss, P=100, N=100):
                                               shared_p=config["shared_perspective"], n=N, no_ss=no_ss)
             lexicon = get_lexicon_example(results_basic_h)
             cA, cP, cR = get_coherences(results_basic_h)
+            sym_loss, sym_acc, sem_score = get_symbolicity(results_basic_h)
 
             ### Update history
             eval_dict["history_basic"]["cP"].append(cP)
             eval_dict["history_basic"]["cA"].append(cA)
             eval_dict["history_basic"]["cR"].append(cR)
             eval_dict["history_basic"]["lexicon"].append(lexicon)
+            eval_dict["history_basic"]["sem_score"].append(sem_score)
+            eval_dict["history_basic"]["sym_acc"].append(sym_acc)
+            print("sem_score: ", sem_score)
+            print("sym_acc: ", sym_acc)
 
         ### Last Population Results
         eval_dict["results_basic"] = results_basic_h
@@ -100,64 +105,64 @@ def eval(exp_name, seed, no_ss, P=100, N=100):
 
         for key1 in ["descriptive", "discriminative"]:
 
-            ''' COMPO (2-feats) PERFORMANCES '''
-            eval_dict[key1]["results_compo"] = {"auto": {}, "social": {}, "utts": None}
-
-            if None is transfer_idxs:
-                results_compo = eval_population(agents, dataset, bin_idxs[2], nb_epochs=P,
-                                                use_p=config["use_img_perspectives"],
-                                                shared_p=config["shared_perspective"], n=N, gen=key1)
-            else:
-                results_compo = eval_population(agents, dataset, torch.tensor(transfer_idxs), nb_epochs=P,
-                                                use_p=config["use_img_perspectives"],
-                                                shared_p=config["shared_perspective"], n=N, gen=key1)
-
-            for key2 in ["auto", "social"]:
-                o, p, r, f1 = get_performances(results_compo, type=key2)
-                eval_dict[key1]["results_compo"][key2]["o"] = o  # Compo Mean Outcomes
-                eval_dict[key1]["results_compo"][key2]["p"] = p  # Compo Mean Precision
-                eval_dict[key1]["results_compo"][key2]["r"] = r  # Compo Mean Recall
-                eval_dict[key1]["results_compo"][key2]["f1"] = f1  # Compo Mean F1
-
-            ''' COMPO (2-feats) FAILURE CASES (of agent 0) '''
-            eval_dict[key1]["compo_fails"] = {"auto": results_compo[0]["auto"]["failure-cases"],
-                                              "social": results_compo[0]["social"]["failure-cases"]}
-
-            ''''''''' ADDITIONAL FIGURES (for agent 0) '''''''''
-
-            eval_dict[key1]["results_compo"]["utts"] = results_compo[0]["utts"]
-            eval_dict[key1]["results_compo"]["refs"] = results_compo[0]["refs"]
-
-            ''' COMPO (2-feats) MATRIX (agent 0)'''
-            print("### COMPOSITIONAL MATRIX...", flush=True)
-
-            matrix = torch.zeros(5, 5, 52, 52)
-            matrix_refs = []
-            for i in range(5):
-                for j in range(5):
-                    referent = torch.zeros(5)
-                    referent[i] = 1
-                    referent[j] = 1
-                    ref = ref_str(referent)
-
-                    if (i == j):
-                        matrix_refs.append(ref)
-                        mask = (np.array(results_basic[0]["refs"]) == ref)
-                        max_cosine_idx = np.argmax(np.array(results_basic[0]["cosines"])[mask])
-                        matrix[i][j] = results_basic[0]["utts"][mask][max_cosine_idx]
-                    else:
-                        mask = (np.array(results_compo[0]["refs"]) == ref)
-                        max_cosine_idx = np.argmax(np.array(results_compo[0]["cosines"])[mask])
-                        matrix[i][j] = results_compo[0]["utts"][mask][max_cosine_idx]
-
-            eval_dict[key1]["compo_matrix"] = {}
-            eval_dict[key1]["compo_matrix"]["utts"] = matrix
-            eval_dict[key1]["compo_matrix"]["refs"] = matrix_refs
-
-            ''' TOPOGRAPHY CORRELATION '''
-            print("### TOPOGRAPHIC UTTERANCES ANALYSIS...", flush=True)
-
-            eval_dict[key1]["topography_corr"] = get_topo_per_compo(results_basic, results_compo)
+            # ''' COMPO (2-feats) PERFORMANCES '''
+            # eval_dict[key1]["results_compo"] = {"auto": {}, "social": {}, "utts": None}
+            #
+            # if None is transfer_idxs:
+            #     results_compo = eval_population(agents, dataset, bin_idxs[2], nb_epochs=P,
+            #                                     use_p=config["use_img_perspectives"],
+            #                                     shared_p=config["shared_perspective"], n=N, gen=key1)
+            # else:
+            #     results_compo = eval_population(agents, dataset, torch.tensor(transfer_idxs), nb_epochs=P,
+            #                                     use_p=config["use_img_perspectives"],
+            #                                     shared_p=config["shared_perspective"], n=N, gen=key1)
+            #
+            # for key2 in ["auto", "social"]:
+            #     o, p, r, f1 = get_performances(results_compo, type=key2)
+            #     eval_dict[key1]["results_compo"][key2]["o"] = o  # Compo Mean Outcomes
+            #     eval_dict[key1]["results_compo"][key2]["p"] = p  # Compo Mean Precision
+            #     eval_dict[key1]["results_compo"][key2]["r"] = r  # Compo Mean Recall
+            #     eval_dict[key1]["results_compo"][key2]["f1"] = f1  # Compo Mean F1
+            #
+            # ''' COMPO (2-feats) FAILURE CASES (of agent 0) '''
+            # eval_dict[key1]["compo_fails"] = {"auto": results_compo[0]["auto"]["failure-cases"],
+            #                                   "social": results_compo[0]["social"]["failure-cases"]}
+            #
+            # ''''''''' ADDITIONAL FIGURES (for agent 0) '''''''''
+            #
+            # eval_dict[key1]["results_compo"]["utts"] = results_compo[0]["utts"]
+            # eval_dict[key1]["results_compo"]["refs"] = results_compo[0]["refs"]
+            #
+            # ''' COMPO (2-feats) MATRIX (agent 0)'''
+            # print("### COMPOSITIONAL MATRIX...", flush=True)
+            #
+            # matrix = torch.zeros(5, 5, 52, 52)
+            # matrix_refs = []
+            # for i in range(5):
+            #     for j in range(5):
+            #         referent = torch.zeros(5)
+            #         referent[i] = 1
+            #         referent[j] = 1
+            #         ref = ref_str(referent)
+            #
+            #         if (i == j):
+            #             matrix_refs.append(ref)
+            #             mask = (np.array(results_basic[0]["refs"]) == ref)
+            #             max_cosine_idx = np.argmax(np.array(results_basic[0]["cosines"])[mask])
+            #             matrix[i][j] = results_basic[0]["utts"][mask][max_cosine_idx]
+            #         else:
+            #             mask = (np.array(results_compo[0]["refs"]) == ref)
+            #             max_cosine_idx = np.argmax(np.array(results_compo[0]["cosines"])[mask])
+            #             matrix[i][j] = results_compo[0]["utts"][mask][max_cosine_idx]
+            #
+            # eval_dict[key1]["compo_matrix"] = {}
+            # eval_dict[key1]["compo_matrix"]["utts"] = matrix
+            # eval_dict[key1]["compo_matrix"]["refs"] = matrix_refs
+            #
+            # ''' TOPOGRAPHY CORRELATION '''
+            # print("### TOPOGRAPHIC UTTERANCES ANALYSIS...", flush=True)
+            #
+            # eval_dict[key1]["topography_corr"] = get_topo_per_compo(results_basic, results_compo)
 
             ''' TSNEs - BASICS & COMPO (2-feats) (agent 0)'''
             print("### EMBEDDINGS T-SNEs...", flush=True)
@@ -173,26 +178,28 @@ def eval(exp_name, seed, no_ss, P=100, N=100):
             tsne_basics["colors"] = [np.where(unique_referents_basic == ref)[0][0] for ref in results_basic[0]["refs"]]
             tsne_basics["str"] = results_basic[0]["refs"]
 
-            ### BIN 2
-            unique_referents_compo = np.unique(results_compo[0]["refs"])
-            embeddings_refs_basic, embeddings_utts_basic = results_basic[0]["reps_refs"], results_basic[0]["reps_utts"]
-
-            tsne_compos = {}
-            for unique_ref in unique_referents_compo.tolist():
-                tsne_compos[unique_ref] = {"refs": None, "utts": None, "colors": None}
-
-                ref_mask = (np.array(results_compo[0]["refs"]) == unique_ref)
-                embeddings_ref_compo = results_compo[0]["reps_refs"][ref_mask]
-                embeddings_utt_compo = results_compo[0]["reps_utts"][ref_mask]
-
-                tsne_compos[unique_ref]["refs"] = TSNE().fit_transform(
-                    torch.cat((embeddings_refs_basic, embeddings_ref_compo)).numpy())
-                tsne_compos[unique_ref]["utts"] = TSNE().fit_transform(
-                    torch.cat((embeddings_utts_basic, embeddings_utt_compo)).numpy())
-                tsne_compos[unique_ref]["colors"] = tsne_basics["colors"] + [-1] * np.sum(ref_mask)
+            # ### BIN 2
+            # unique_referents_compo = np.unique(results_compo[0]["refs"])
+            # embeddings_refs_basic, embeddings_utts_basic = results_basic[0]["reps_refs"], results_basic[0]["reps_utts"]
+            #
+            # tsne_compos = {}
+            # for unique_ref in unique_referents_compo.tolist():
+            #     tsne_compos[unique_ref] = {"refs": None, "utts": None, "colors": None}
+            #
+            #     ref_mask = (np.array(results_compo[0]["refs"]) == unique_ref)
+            #     embeddings_ref_compo = results_compo[0]["reps_refs"][ref_mask]
+            #     embeddings_utt_compo = results_compo[0]["reps_utts"][ref_mask]
+            #
+            #     tsne_compos[unique_ref]["refs"] = TSNE().fit_transform(
+            #         torch.cat((embeddings_refs_basic, embeddings_ref_compo)).numpy())
+            #     tsne_compos[unique_ref]["utts"] = TSNE().fit_transform(
+            #         torch.cat((embeddings_utts_basic, embeddings_utt_compo)).numpy())
+            #     tsne_compos[unique_ref]["colors"] = tsne_basics["colors"] + [-1] * np.sum(ref_mask)
 
             eval_dict[key1]["tsne_basics"] = tsne_basics
-            eval_dict[key1]["tsne_compos"] = tsne_compos
+            # eval_dict[key1]["tsne_compos"] = tsne_compos
+
+
 
         ''' SAVE RESULTS '''
 

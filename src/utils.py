@@ -21,9 +21,9 @@ else:
 
 ##### SYSTEMATIC REFERENTS -> IMAGES & PERSPECTIVES ############################
 if not os.path.exists(path+'data'):
-    mnist_train = torchvision.datasets.MNIST(root=os.path.join(path,'data'), train=True, download=True, transform=torchvision.transforms.ToTensor())
+    CIFAR10_train = torchvision.datasets.CIFAR10(root=os.path.join(path,'data'), train=True, download=True, transform=torchvision.transforms.ToTensor())
 else:
-    mnist_train = torchvision.datasets.MNIST(root=os.path.join(path,'data'), train=True, download=False, transform=torchvision.transforms.ToTensor())
+    CIFAR10_train = torchvision.datasets.CIFAR10(root=os.path.join(path,'data'), train=True, download=False, transform=torchvision.transforms.ToTensor())
 
 
 ##### DISPLAY FUNCTIONS ########################################################
@@ -54,27 +54,34 @@ def show_imgs(imgs,labels=None):
 def sample_nbs(features):
     nb_imgs = []
     for i in features:
-        imgs    = mnist_train.data[mnist_train.targets==i]
-        idx     = random.randint(0,imgs.shape[0]-1)
+        targets_array = np.array(CIFAR10_train.targets)
+        imgs = CIFAR10_train.data[targets_array == i]
+        if imgs.shape[0] == 0:
+            raise ValueError(f"No images found for class {i} in CIFAR10 dataset")
+        idx = random.randint(0, imgs.shape[0] - 1)
         nb_imgs.append(imgs[idx])
     return nb_imgs
 
 ### Converts a systematic referent into an image perspective
-def convert_to_imgs(dataset,batch_size=1,ood=False):
-    dataset_imgs = torch.empty(0,batch_size,1,4*28,4*28)
+def convert_to_imgs(dataset,batch_size=1,ood=False,scale=1):
+    img_dim=CIFAR10_train.data[0].shape  # (H, W, C) e.g. (32, 32, 3)
+    H, W, C = img_dim
+    # img_referent shape: [batch_size, C, 4*H, 4*W]  (CHW, float32 in [0,1])
+    dataset_imgs = torch.empty(0,batch_size,C,scale*H,scale*W)
     for i in range(dataset.shape[0]):
         referent  = dataset[i]
         features  = (referent==1).nonzero(as_tuple=True)[0].tolist()
-        #nb_imgs   = sample_nbs(features)
 
-        img_referent = torch.zeros(batch_size,1,4*28,4*28)
+        img_referent = torch.zeros(batch_size,C,scale*H,scale*W)
         for b in range(batch_size):
             nb_imgs = sample_nbs(features if (not ood) else [feature+5 for feature in features])
-            positions = np.random.choice(list(range(0,4*4)),len(features),replace=False)
+            positions = np.random.choice(list(range(0,scale*scale)),len(features),replace=False)
             for j,position in enumerate(positions):
-                x = position%4
-                y = math.floor(position/4)
-                img_referent[b,0,x*28:x*28+28,y*28:y*28+28] = nb_imgs[j]
+                x = position%scale
+                y = math.floor(position/scale)
+                # nb_imgs[j] is uint8 HWC numpy array; convert to float CHW tensor
+                tile = torch.from_numpy(nb_imgs[j]).float().div(255).permute(2,0,1)  # (C, H, W)
+                img_referent[b,:,x*H:x*H+H,y*W:y*W+W] = tile
 
         dataset_imgs = torch.cat((dataset_imgs, img_referent.unsqueeze(0)))
 

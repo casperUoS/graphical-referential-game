@@ -1,9 +1,13 @@
+import numpy
+from numpy.linalg import norm
+from scipy import stats
 from sklearn.manifold import TSNE
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 import matplotlib.pyplot as plt
 import torch, os, scipy, gc
 import numpy as np
+from torchvision import models
 
 from display import *
 from train import *
@@ -11,6 +15,24 @@ from agent import *
 from utils import *
 from data import *
 from ss import *
+
+from gensim.models import Word2Vec, KeyedVectors
+
+class SketchDataset(Dataset):
+    def __init__(self, messages, labels):
+        """
+        :param messages: Tensor of shape (num_samples, height, width, channels)
+        """
+        self.messages = messages
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.messages)
+
+    def __getitem__(self, idx):
+        message = self.messages[idx]
+        label = self.labels[idx]
+        return message, label
 
 ''' OBJECT DETECTION METRICS '''
 
@@ -50,7 +72,7 @@ def mean_pairwise_shape_sim(utterances_coords):
 def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = True, shared_p = False, n=100, gen="descriptive",no_ss=False):
     str_eval_dataset = [ref_str(dataset[eval_set_idxs][i]) for i in range(dataset[eval_set_idxs].shape[0])]
     print(f"---------- Evaluating a population of {len(agents)} agents in {nb_epochs} epochs.", flush=True)
-    print(f"---------- Eval Dataset:\n{str_eval_dataset}", flush=True)
+    print(f"----------  Eval Dataset:\n{str_eval_dataset}", flush=True)
 
     results = {}
 
@@ -58,7 +80,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
         print(f"----- Evaluating Agent {i}", flush=True)
 
-        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
+        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,3*(20+2)),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
             results[i][key]["outcomes"]      = []
             results[i][key]["precisions"]    = []
@@ -82,14 +104,12 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
 
                 ### If we use perspectives, convert referents into images.
                 if use_p:
-                    print("ABABBDDDAAAA")
                     context_p = convert_to_imgs(batch_refs)                     # Listener's Context perspective
                     if shared_p: batch_refs_p = context_p                       # Shared Speaker's Target perspective
                     else:        batch_refs_p = convert_to_imgs(batch_refs)     # Unshared Speaker's Target perspective
                 else:
                     context_p    = batch_refs.to(device)
                     batch_refs_p = batch_refs.to(device)
-                print("OMLLLLLLL", batch_refs_p.shape)
 
                 ### Get Speaker's utterances
                 targets = torch.arange(0,batch_refs.shape[0])
@@ -104,11 +124,10 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
                 ### Get Referents keys & Refs/Utts Embeddings
                 with torch.no_grad():
                     embeddings_refs, embeddings_utts = speaker.encoderA(batch_refs_p.to(device)).detach().cpu(), speaker.encoderB(utterances.to(device)).detach().cpu()
-                    print("embeddings_refs.size()", embeddings_refs.size())
-                    print("embeddings_utts.size()", embeddings_utts.size())
                     results[i]["reps_refs"]   = torch.cat((results[i]["reps_refs"],embeddings_refs))
                     results[i]["reps_utts"]   = torch.cat((results[i]["reps_utts"],embeddings_utts))
                     results[i]["refs"]       += [ref_str(ref) for ref in batch_refs]
+                    results[i]["refs_id"]    += [ref for ref in batch_refs]
                     results[i]["utts"]        = torch.cat((results[i]["utts"], utterances[:,0,:,:]))
                     results[i]["utts_coords"] = torch.cat((results[i]["utts_coords"], coords))
                     results[i]["cosines"]    += [-loss for loss in losses.detach().cpu().tolist()]
@@ -375,7 +394,7 @@ def get_coherences(results):
 
         ### A-COHERENCE
         for j in range(ref_mask.sum()):
-            coord_set = torch.empty(0,20 + 2)
+            coord_set = torch.empty(0,3*(20 + 2))
             for i in results.keys():
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][j].unsqueeze(0)))
             a_coherences.append(mean_pairwise_shape_sim(coord_set))
@@ -383,13 +402,134 @@ def get_coherences(results):
     ### R-COHERENCE
     for p in range(nb_perspectives):
         for i in results.keys():
-            coord_set = torch.empty(0,20 + 2)
+            coord_set = torch.empty(0,3*(20 + 2))
             for ref in unique_referents:
                 ref_mask  = (np.array(referents) == ref)
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][p].unsqueeze(0)))
             r_coherences.append(mean_pairwise_shape_sim(coord_set))
 
     return a_coherences, p_coherences, r_coherences
+
+def semantic_correlaton(vgg, val_dataloader):
+
+    cate_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+                   'dog', 'frog', 'horse', 'ship', 'truck']
+
+    word2vec = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300.bin', binary=True)
+
+    cate2vec = {}
+    for name in cate_names:
+        cate2vec[name] = numpy.asarray(word2vec[name], dtype=np.float32)
+
+    feature_extractor = vgg.features
+
+    cate_features = {}
+
+    with torch.no_grad():
+        for batch_id, batch in enumerate(val_dataloader):
+            inputs, labels = batch
+            features = feature_extractor(inputs)
+
+            for i, label_idx in enumerate(labels):
+                label_name = cate_names[label_idx.item()]
+                if label_name not in cate_features:
+                    cate_features[label_name] = []
+                cate_features[label_name].append(features[i].cpu())
+
+    cate2feature = {}
+    for name in cate_names:
+        cate_feature = cate_features[name]
+        cate_feature = numpy.array(cate_feature).squeeze()
+        cate_feature = cate_feature.mean(axis=0)
+        cate2feature[name] = cate_feature
+
+    x = []
+    y = []
+    for cate_i in cate_names:
+        for cate_j in cate_names:
+            vec1 = cate2vec[cate_i]
+            vec2 = cate2vec[cate_j]
+            sim = vec1.dot(vec2) / (norm(vec1) * norm(vec2))
+            x.append(sim)
+
+            vec1 = cate2feature[cate_i]
+            vec2 = cate2feature[cate_j]
+            sim = vec1.dot(vec2) / (norm(vec1) * norm(vec2))
+            y.append(sim)
+
+    a = stats.pearsonr(np.array(x), np.array(y))
+    return a[0]
+
+def get_symbolicity(results, epochs=10):
+    messages = results["utts"]
+    ids = results["refs_id"]
+    print(messages.shape)
+    print(len(ids))
+
+    train_messages, val_messages = np.split(messages, [int(len(messages) * 0.9)])
+    train_labels, val_labels = np.split(ids, [int(len(ids) * 0.9)])
+
+    train_sketches = SketchDataset(train_messages, train_labels)
+    test_sketches = SketchDataset(val_messages, val_labels)
+
+    train_dataloader = DataLoader(train_sketches, batch_size=16, shuffle=True, num_workers=2)
+    val_dataloader = DataLoader(test_sketches, batch_size=16, shuffle=False, num_workers=2)
+
+    vgg = models.vgg16(pretrained=False)
+    vgg.load_state_dict(torch.load("data/vgg16_pretrained.pth"))
+
+    vgg.classifier[-1] = nn.Linear(vgg.classifier[-1].in_features, 10)
+
+    for param in vgg.features.parameters():
+        param.requires_grad = False
+
+    for param in vgg.classifier[:-1].parameters():
+        param.requires_grad = False
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(vgg.parameters(), lr=0.0002, momentum=0.9)
+
+    for epoch in range(epochs):
+        print("epoch:", epoch)
+        running_loss = 0.0
+        for batch_id, batch in enumerate(train_dataloader):
+            inputs, labels = batch
+
+            optimizer.zero_grad()
+
+            outputs = vgg(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            # print statistics
+            running_loss += loss.item()
+            # if batch_id % 2000 == 1999:  # print every 2000 mini-batches
+            #     print(f'[{epoch + 1}, {batch_id + 1:5d}] loss: {running_loss / 2000:.3f}')
+            #     running_loss = 0.0
+        print(f'[{epoch + 1}] loss: {running_loss / len(train_dataloader):.3f}')
+
+    print("evaluating symbolicity ...")
+
+    running_loss = 0.0
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for batch_id, batch in enumerate(val_dataloader):
+            inputs, labels = batch
+            outputs = vgg(inputs)
+            loss = criterion(outputs, labels)
+            running_loss += loss.item()
+            total += labels.size(0)
+            correct += (outputs.argmax(dim=1) == labels).sum().item()
+
+    eval_loss = running_loss / len(val_dataloader)
+    eval_accuracy = (100 * correct / total)
+
+    sem_col = semantic_correlaton(vgg, val_dataloader)
+
+    return eval_loss, eval_accuracy, sem_col
+
 
 ''' GET MEAN PERFORMANCES '''
 

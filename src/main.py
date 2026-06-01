@@ -25,9 +25,9 @@ config = {
     "action_size": 40,  # Size of agent's actions vectors
     "referents_bs": 32,  # Nb of games per training iteration
     "max_iterations": 10000,  # Max nb of training iterations
-    "use_img_perspectives": True,  # Convert vectors referents into MNIST compositions?
+    "use_img_perspectives": True,  # Convert vectors referents into CIFAR10 compositions?
     "ss_class": "dmp",  # Sensorimotor system class
-    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 52, "th": 1e-2},  # Sensorimotor system params
+    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 52, "th": 1e-2, "n_strokes":1},  # Sensorimotor system params
     "shared_perspective": False,
     "ood": False,
     "nb_features": 5,
@@ -35,7 +35,8 @@ config = {
     "transfer_refs": None,
     "use_temp": True,
     "use_baseline": True,
-    "no_ss": False
+    "no_ss": False,
+    "vgg_path": None,
 }
 
 def parse_arguments():
@@ -44,6 +45,7 @@ def parse_arguments():
     parser.add_argument("--mode", type=str, default="test")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max_iterations", type=int, default=100000)
+    parser.add_argument("--vgg_path", type=str, default=None)
 
     params = sys.argv[1:]
     opts = parser.parse_args(params)
@@ -84,6 +86,15 @@ if __name__ == "__main__":
         config["nb_agents"] = 2
         config["nb_features"] = 5
         config["ood"] = False
+    elif mode == "base-multi-stroke":
+        config["max_iterations"] = 10000
+        config["use_img_perspectives"] = True
+        config["nb_agents"] = 2
+        config["nb_features"] = 5
+        config["ood"] = False
+        config["ss_params"]["n"] = 4
+        config["ss_params"]["n_strokes"] = 3
+        config["action_size"] = 3* config["action_size"]
     elif mode == "base-shared":
         config["max_iterations"] = 10000
         config["use_img_perspectives"] = True
@@ -173,6 +184,7 @@ if __name__ == "__main__":
     config["seed"] = seed
     config["exp_name"] = opts.exp_name
     config["max_iterations"] = opts.max_iterations
+    config["vgg_path"] = opts.vgg_path
 
     ''' Experiment path '''
     exp_path = os.path.join(path, 'results', config["exp_name"] + "/")
