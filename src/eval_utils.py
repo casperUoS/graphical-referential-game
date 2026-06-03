@@ -80,7 +80,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
         print(f"----- Evaluating Agent {i}", flush=True)
 
-        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,3*(20+2)),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
+        results[i] = {"auto":{},"social":{},"refs":[],"refs_id":[],"utts":torch.empty(0,32,32),"utts_coords":torch.empty(0,1*(20+2)),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
             results[i][key]["outcomes"]      = []
             results[i][key]["precisions"]    = []
@@ -127,7 +127,7 @@ def eval_population(agents, dataset, eval_set_idxs, nb_epochs = 100, use_p = Tru
                     results[i]["reps_refs"]   = torch.cat((results[i]["reps_refs"],embeddings_refs))
                     results[i]["reps_utts"]   = torch.cat((results[i]["reps_utts"],embeddings_utts))
                     results[i]["refs"]       += [ref_str(ref) for ref in batch_refs]
-                    results[i]["refs_id"]    += [ref for ref in batch_refs]
+                    results[i]["refs_id"]    += [ (ref==1).nonzero(as_tuple=True)[0] for ref in batch_refs]
                     results[i]["utts"]        = torch.cat((results[i]["utts"], utterances[:,0,:,:]))
                     results[i]["utts_coords"] = torch.cat((results[i]["utts_coords"], coords))
                     results[i]["cosines"]    += [-loss for loss in losses.detach().cpu().tolist()]
@@ -170,7 +170,7 @@ def eval_population_alation(agents, dataset, eval_set_idxs, nb_epochs = 100, use
         dl = DataLoader(eval_set_idxs,batch_size=32,shuffle=False)
         print(f"----- Evaluating Agent {i}", flush=True)
 
-        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,52,52),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
+        results[i] = {"auto":{},"social":{},"refs":[],"utts":torch.empty(0,32,32),"utts_coords":torch.empty(0,20+2),"reps_refs":torch.empty(0,32),"reps_utts":torch.empty(0,32),"cosines":[]}
         for key in ["auto","social"]:
             results[i][key]["outcomes"]      = []
             results[i][key]["precisions"]    = []
@@ -366,7 +366,7 @@ def get_lexicon_example(results):
     referents        = results[0]["refs"]
     unique_referents = np.unique(results[0]["refs"]).tolist()
     nb_agents        = len(list(results.keys()))
-    lexicon          = torch.zeros(nb_agents, len(unique_referents), 52, 52)
+    lexicon          = torch.zeros(nb_agents, len(unique_referents), 32, 32)
 
     for i in range(nb_agents):
         for j,ref in enumerate(unique_referents):
@@ -394,7 +394,7 @@ def get_coherences(results):
 
         ### A-COHERENCE
         for j in range(ref_mask.sum()):
-            coord_set = torch.empty(0,3*(20 + 2))
+            coord_set = torch.empty(0,1*(20 + 2))
             for i in results.keys():
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][j].unsqueeze(0)))
             a_coherences.append(mean_pairwise_shape_sim(coord_set))
@@ -402,7 +402,7 @@ def get_coherences(results):
     ### R-COHERENCE
     for p in range(nb_perspectives):
         for i in results.keys():
-            coord_set = torch.empty(0,3*(20 + 2))
+            coord_set = torch.empty(0,1*(20 + 2))
             for ref in unique_referents:
                 ref_mask  = (np.array(referents) == ref)
                 coord_set = torch.cat((coord_set,results[i]["utts_coords"][ref_mask][p].unsqueeze(0)))
@@ -461,10 +461,12 @@ def semantic_correlaton(vgg, val_dataloader):
     return a[0]
 
 def get_symbolicity(results, epochs=10):
-    messages = results["utts"]
-    ids = results["refs_id"]
-    print(messages.shape)
-    print(len(ids))
+    messages = results[0]["utts"]
+    messages = torch.squeeze(messages)
+    messages = messages.unsqueeze(1)
+    messages = messages.repeat(1, 3, 1, 1)
+    ids = torch.tensor(np.asarray(results[0]["refs_id"])).squeeze()
+    print("messages",messages.shape)
 
     train_messages, val_messages = np.split(messages, [int(len(messages) * 0.9)])
     train_labels, val_labels = np.split(ids, [int(len(ids) * 0.9)])
@@ -474,6 +476,7 @@ def get_symbolicity(results, epochs=10):
 
     train_dataloader = DataLoader(train_sketches, batch_size=16, shuffle=True, num_workers=2)
     val_dataloader = DataLoader(test_sketches, batch_size=16, shuffle=False, num_workers=2)
+    print(len(val_dataloader))
 
     vgg = models.vgg16(pretrained=False)
     vgg.load_state_dict(torch.load("data/vgg16_pretrained.pth"))

@@ -47,7 +47,7 @@ class AgentEBM():
     self.encoderB = nn.Sequential(nn.Conv2d(1,  8,  3, stride=2, padding=1), nn.ReLU(True),
                                   nn.Conv2d(8,  16, 3, stride=2, padding=1), nn.ReLU(True),
                                   nn.Conv2d(16, 32, 3, stride=2, padding=0), nn.ReLU(True),
-                                  nn.Flatten(), nn.Linear(6*6*32, 128), nn.ReLU(True), nn.Linear(128, embedding_size))
+                                  nn.Flatten(), nn.Linear(3*3*32, 128), nn.ReLU(True), nn.Linear(128, embedding_size))
 
     self.encoderA.to(device)
     self.encoderB.to(device)
@@ -79,14 +79,14 @@ class AgentEBM():
       referents_embeddings = self.encoderA(referents).detach()
 
       ##### ACTIONS INITIALIZATION
-      utterances = torch.rand(B*nb_search,1,52,52).to(device)
+      utterances = torch.rand(B*nb_search,1,32,32).to(device)
       utterances.requires_grad_(True)
 
       params    = [utterances]
       optimizer = optim.Adam(params,lr=self.action_lr)
 
       ##### GET HISTORY OPTION
-      utt_history   = torch.empty(B, 0,52,52)
+      utt_history   = torch.empty(B, 0,32,32)
       coord_history = torch.empty(B, 0,3*(20+2))
 
       ##### ACTIONS GENERATION
@@ -126,7 +126,7 @@ class AgentEBM():
 
       self.set_train()
 
-      return utterances.reshape(B,nb_search,1,52,52)[torch.arange(0,B),best_idx],None, None, best_losses
+      return utterances.reshape(B,nb_search,1,32,32)[torch.arange(0,B),best_idx],None, None, best_losses
 
   def get_actions(self,referents,targets,iterations=100,nb_search=32,verbose=True,symmetric=True, get_history=False, discriminative=False):
       self.set_eval()
@@ -142,7 +142,7 @@ class AgentEBM():
       optimizer = optim.Adam(params,lr=self.action_lr)
 
       ##### GET HISTORY OPTION
-      utt_history   = torch.empty(B, 0,52,52)
+      utt_history   = torch.empty(B, 0,32,32)
       coord_history = torch.empty(B, 0,3*(20+2))
 
       ##### ACTIONS GENERATION
@@ -169,7 +169,7 @@ class AgentEBM():
         optimizer.step()
 
         if get_history:
-            utt_history   = torch.cat((utt_history, utterances[:,0,:,:].reshape(B,nb_search,52,52).detach().cpu()),dim=1)
+            utt_history   = torch.cat((utt_history, utterances[:,0,:,:].reshape(B,nb_search,32,32).detach().cpu()),dim=1)
             coord_history = torch.cat((coord_history,self.sensorimotor_system.pts.reshape(B,nb_search,-1).detach().cpu()),dim=1)
 
       ##### ACTIONS SELECTION
@@ -189,12 +189,12 @@ class AgentEBM():
       self.set_train()
 
       if get_history:
-          utt_history = torch.cat((utt_history, utterances[:,0,:,:].reshape(B,nb_search,52,52).detach().cpu()),dim=1)
+          utt_history = torch.cat((utt_history, utterances[:,0,:,:].reshape(B,nb_search,32,32).detach().cpu()),dim=1)
           coord_history = torch.cat((coord_history,self.sensorimotor_system.pts.reshape(B,nb_search,-1).detach().cpu()),dim=1)
 
           return utt_history, coord_history
       else:
-          return utterances.reshape(B,nb_search,1,52,52)[torch.arange(0,B),best_idx], actions.reshape(B,nb_search,-1)[torch.arange(0,B),best_idx], self.sensorimotor_system.pts.reshape(B,nb_search,-1)[torch.arange(0,B),best_idx], best_losses
+          return utterances.reshape(B,nb_search,1,32,32)[torch.arange(0,B),best_idx], actions.reshape(B,nb_search,-1)[torch.arange(0,B),best_idx], self.sensorimotor_system.pts.reshape(B,nb_search,-1)[torch.arange(0,B),best_idx], best_losses
 
   def get_referentSelections(self,referents,utterances):
     self.set_eval()

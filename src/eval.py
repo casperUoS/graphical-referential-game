@@ -10,7 +10,7 @@ import os
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 
-def eval(exp_name, seed, no_ss, P=100, N=100):
+def eval(exp_name, seed, no_ss, P=7, N=100):
     print(f"##### EVALUATION - EXPERIMENT {exp_name} - SEED {seed}", flush=True)
 
     ''' PATH TO RESULTS '''
@@ -136,7 +136,7 @@ def eval(exp_name, seed, no_ss, P=100, N=100):
             # ''' COMPO (2-feats) MATRIX (agent 0)'''
             # print("### COMPOSITIONAL MATRIX...", flush=True)
             #
-            # matrix = torch.zeros(5, 5, 52, 52)
+            # matrix = torch.zeros(5, 5, 32, 32)
             # matrix_refs = []
             # for i in range(5):
             #     for j in range(5):

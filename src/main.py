@@ -27,7 +27,7 @@ config = {
     "max_iterations": 10000,  # Max nb of training iterations
     "use_img_perspectives": True,  # Convert vectors referents into CIFAR10 compositions?
     "ss_class": "dmp",  # Sensorimotor system class
-    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 52, "th": 1e-2, "n_strokes":1},  # Sensorimotor system params
+    "ss_params": {"n_bfs": 20, "dt": 1e-1, "n": 10, "d": 32, "th": 1e-2, "n_strokes":1},  # Sensorimotor system params
     "shared_perspective": False,
     "ood": False,
     "nb_features": 5,
